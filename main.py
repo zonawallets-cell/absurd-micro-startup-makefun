@@ -15,8 +15,11 @@ PITCH = (
 
 # Gate: /output/entry.txt must be UTF-8 text of 1 to 200 characters,
 # not only white space, a single line.
-assert 1 <= len(PITCH) <= 200
+MAX_CHARS = 200
+MIN_CHARS = 1
+assert MIN_CHARS <= len(PITCH) <= MAX_CHARS
 assert PITCH.strip() and "\n" not in PITCH
+PITCH.encode("utf-8")  # raises if not valid UTF-8
 
 
 def main() -> None:
@@ -25,6 +28,11 @@ def main() -> None:
     path = os.path.join(out_dir, "entry.txt")
     with open(path, "w", encoding="utf-8", newline="") as f:
         f.write(PITCH)
+    # Round-trip guard: the file the grader reads must be byte-identical
+    # to the pitch we validated, with nothing appended or re-encoded.
+    with open(path, "r", encoding="utf-8", newline="") as f:
+        if f.read() != PITCH:
+            raise SystemExit("entry.txt does not match the validated pitch")
 
 
 if __name__ == "__main__":
